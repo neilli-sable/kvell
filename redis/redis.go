@@ -12,7 +12,7 @@ import (
 
 // Client ...
 type Client struct {
-	conn redis.Conn
+	pool *redis.Pool
 	ttl  time.Duration
 }
 
@@ -27,18 +27,27 @@ type Option struct {
 
 // NewClient ...
 func NewClient(opt Option) (kvell.Store, error) {
-	conn, err := redis.Dial("tcp", fmt.Sprintf("%s:%d", opt.Host, opt.Port))
-	if err != nil {
-		return nil, err
-	}
+	pool := newPool(fmt.Sprintf("%s:%d", opt.Host, opt.Port))
 	return &Client{
-		conn: conn,
+		pool: pool,
 		ttl:  opt.TTL,
 	}, nil
 }
 
+func newPool(addr string) *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     3,
+		MaxActive:   0,
+		IdleTimeout: 240 * time.Second,
+		Dial:        func() (redis.Conn, error) { return redis.Dial("tcp", addr) },
+	}
+}
+
 // Set ...
 func (c *Client) Set(key string, value interface{}) error {
+	conn := c.pool.Get()
+	defer conn.Close()
+
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -48,13 +57,16 @@ func (c *Client) Set(key string, value interface{}) error {
 		args = []interface{}{key, data, "EX", c.ttl.Seconds()}
 	}
 
-	_, err = c.conn.Do("SET", args...)
+	_, err = conn.Do("SET", args...)
 	return err
 }
 
 // Get ...
 func (c *Client) Get(key string, value interface{}) (found bool, err error) {
-	r, err := c.conn.Do("GET", key)
+	conn := c.pool.Get()
+	defer conn.Close()
+
+	r, err := conn.Do("GET", key)
 	if err != nil {
 		return false, err
 	}
@@ -83,11 +95,14 @@ func (c *Client) Get(key string, value interface{}) (found bool, err error) {
 
 // Delete ...
 func (c *Client) Delete(key string) error {
-	_, err := c.conn.Do("DEL", key)
+	conn := c.pool.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("DEL", key)
 	return err
 }
 
 // Close ...
 func (c *Client) Close() error {
-	return c.conn.Close()
+	return c.pool.Close()
 }
