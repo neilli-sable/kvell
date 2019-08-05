@@ -86,15 +86,15 @@ func TestUpdateTimeToLive(t *testing.T) {
 	}
 
 	_ = client.createTable(option.ReadCapacityUnits, option.WriteCapacityUnits)
-	err := client.updateTTL(ttlAttrName, true)
+	err := client.updateTTLSetting(ttlAttrName, true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = client.updateTTL(ttlAttrName, false)
+	err = client.updateTTLSetting(ttlAttrName, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = client.updateTTL(ttlAttrName, true)
+	err = client.updateTTLSetting(ttlAttrName, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,6 +137,23 @@ func TestGet(t *testing.T) {
 	}
 	if !found {
 		t.Fatal(errors.New("not found"))
+	}
+}
+
+func TestUpdateTTL(t *testing.T) {
+	client, err := NewClient(option)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+
+	const (
+		key = "test"
+	)
+
+	err = client.UpdateTTL(key)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 

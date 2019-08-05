@@ -93,14 +93,14 @@ func (c *Client) init(opt Option) error {
 	current, err := c.describeTTL()
 	// disabled to enable
 	if opt.TTL.Nanoseconds() > 0 && !current.enabled {
-		err = c.updateTTL(ttlAttrName, true)
+		err = c.updateTTLSetting(ttlAttrName, true)
 		if err != nil {
 			return err
 		}
 	}
 	// want disable
 	if opt.TTL.Nanoseconds() == 0 && current.enabled {
-		err = c.updateTTL(ttlAttrName, false)
+		err = c.updateTTLSetting(ttlAttrName, false)
 		if err != nil {
 			return err
 		}
@@ -183,7 +183,7 @@ func (c *Client) describeTTL() (current TTL, err error) {
 }
 
 // updateTTl
-func (c *Client) updateTTL(ttlAttributeName string, enable bool) error {
+func (c *Client) updateTTLSetting(ttlAttributeName string, enable bool) error {
 	ttl := &dynamodb.TimeToLiveSpecification{
 		AttributeName: aws.String(ttlAttributeName),
 		Enabled:       aws.Bool(enable),
@@ -250,6 +250,28 @@ func (c *Client) Get(key string, value interface{}) (found bool, err error) {
 	data := attributeVal.B
 
 	return true, json.Unmarshal(data, value)
+}
+
+// UpdateTTL ...
+func (c *Client) UpdateTTL(key string) error {
+	if key == "" {
+		return errors.New("key is empty")
+	}
+
+	item := make(map[string]*dynamodb.AttributeValue)
+	item[keyAttrName] = &dynamodb.AttributeValue{
+		S: aws.String(key),
+	}
+	ttlUnixtime := time.Now().Add(c.ttl).Unix()
+	item[ttlAttrName] = &dynamodb.AttributeValue{
+		N: aws.String(fmt.Sprintf("%d", ttlUnixtime)),
+	}
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String(c.tableName),
+		Item:      item,
+	}
+	_, err := c.conn.PutItem(input)
+	return err
 }
 
 // Delete ...

@@ -93,6 +93,21 @@ func (c *Client) Get(key string, value interface{}) (found bool, err error) {
 	return false, errors.New("redis return undefined value")
 }
 
+// UpdateTTL ...
+func (c *Client) UpdateTTL(key string) error {
+	conn := c.pool.Get()
+	defer conn.Close()
+
+	if c.ttl.Nanoseconds() == 0 {
+		return nil
+	}
+
+	args := []interface{}{key, c.ttl.Seconds()}
+	_, err := conn.Do("EXPIRE", args...)
+
+	return err
+}
+
 // Delete ...
 func (c *Client) Delete(key string) error {
 	conn := c.pool.Get()

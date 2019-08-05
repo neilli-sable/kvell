@@ -61,6 +61,23 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestUpdateTTL(t *testing.T) {
+	client, err := NewClient(option)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+
+	const (
+		key = "test"
+	)
+
+	err = client.UpdateTTL(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // Delete ...
 func TestDelete(t *testing.T) {
 	client, err := NewClient(option)
