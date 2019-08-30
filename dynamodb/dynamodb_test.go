@@ -14,8 +14,8 @@ var option = Option{
 	ReadCapacityUnits:    1,
 	WriteCapacityUnits:   1,
 	WaitForTableCreation: aws.Bool(true),
-	AWSaccessKeyID:       "dummy",
-	AWSsecretAccessKey:   "fake",
+	AWSAccessKeyID:       "dummy",
+	AWSSecretAccessKey:   "fake",
 	CustomEndpoint:       "http://localhost:8000",
 	TTL:                  20,
 }

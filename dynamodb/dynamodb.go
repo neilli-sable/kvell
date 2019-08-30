@@ -32,8 +32,8 @@ type Option struct {
 	ReadCapacityUnits    int64
 	WriteCapacityUnits   int64
 	WaitForTableCreation *bool
-	AWSaccessKeyID       string
-	AWSsecretAccessKey   string
+	AWSAccessKeyID       string
+	AWSSecretAccessKey   string
 	CustomEndpoint       string
 	TTL                  time.Duration
 }
@@ -68,7 +68,7 @@ func getConnection(opt Option) *dynamodb.DynamoDB {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(opt.Region),
 		Endpoint:    aws.String(opt.CustomEndpoint),
-		Credentials: credentials.NewStaticCredentials(opt.AWSaccessKeyID, opt.AWSsecretAccessKey, ""),
+		Credentials: credentials.NewStaticCredentials(opt.AWSAccessKeyID, opt.AWSSecretAccessKey, ""),
 	})
 	if err != nil {
 		panic(err)
