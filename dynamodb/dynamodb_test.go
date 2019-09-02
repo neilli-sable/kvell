@@ -204,6 +204,11 @@ func TestSenario(t *testing.T) {
 		t.Fatalf("different value")
 	}
 
+	err = client.UpdateTTL(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = client.Delete(key)
 	if err != nil {
 		t.Fatal(err)

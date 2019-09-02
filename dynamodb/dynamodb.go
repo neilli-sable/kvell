@@ -258,19 +258,24 @@ func (c *Client) UpdateTTL(key string) error {
 		return errors.New("key is empty")
 	}
 
-	item := make(map[string]*dynamodb.AttributeValue)
-	item[keyAttrName] = &dynamodb.AttributeValue{
+	primaryKey := make(map[string]*dynamodb.AttributeValue)
+	primaryKey[keyAttrName] = &dynamodb.AttributeValue{
 		S: aws.String(key),
 	}
+
 	ttlUnixtime := time.Now().Add(c.ttl).Unix()
-	item[ttlAttrName] = &dynamodb.AttributeValue{
+	attributeVal := make(map[string]*dynamodb.AttributeValue)
+	attributeVal[":t"] = &dynamodb.AttributeValue{
 		N: aws.String(fmt.Sprintf("%d", ttlUnixtime)),
 	}
-	input := &dynamodb.PutItemInput{
-		TableName: aws.String(c.tableName),
-		Item:      item,
+
+	input := &dynamodb.UpdateItemInput{
+		TableName:                 aws.String(c.tableName),
+		Key:                       primaryKey,
+		UpdateExpression:          aws.String("SET unixtime = :t"),
+		ExpressionAttributeValues: attributeVal,
 	}
-	_, err := c.conn.PutItem(input)
+	_, err := c.conn.UpdateItem(input)
 	return err
 }
 
