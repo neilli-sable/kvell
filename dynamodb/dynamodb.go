@@ -54,6 +54,7 @@ func NewClient(opt Option) (kvell.Store, error) {
 	client := &Client{
 		conn:      conn,
 		tableName: opt.TableName,
+		ttl:       opt.TTL,
 	}
 
 	err := client.init(opt)
