@@ -43,6 +43,14 @@ func newPool(addr string) *redis.Pool {
 	}
 }
 
+// Health ...
+func (c *Client) Health() error {
+	if c.pool == nil {
+		return errors.New("connection pool not found")
+	}
+	return nil
+}
+
 // Set ...
 func (c *Client) Set(key string, value interface{}) error {
 	conn := c.pool.Get()

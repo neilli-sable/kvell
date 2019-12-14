@@ -110,6 +110,18 @@ func (c *Client) init(opt Option) error {
 	return nil
 }
 
+// Health ...
+func (c *Client) Health() error {
+	exist, err := c.isExistTable(c.tableName)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		return errors.New("table not found")
+	}
+	return nil
+}
+
 // isExistTable ...
 func (c *Client) isExistTable(tableName string) (bool, error) {
 	if tableName == "" {
