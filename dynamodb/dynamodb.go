@@ -66,10 +66,15 @@ func NewClient(opt Option) (kvell.Store, error) {
 }
 
 func getConnection(opt Option) *dynamodb.DynamoDB {
+	var creds *credentials.Credentials
+	if opt.AWSAccessKeyID != "" && opt.AWSSecretAccessKey != "" {
+		creds = credentials.NewStaticCredentials(opt.AWSAccessKeyID, opt.AWSSecretAccessKey, "")
+	}
+
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(opt.Region),
 		Endpoint:    aws.String(opt.CustomEndpoint),
-		Credentials: credentials.NewStaticCredentials(opt.AWSAccessKeyID, opt.AWSSecretAccessKey, ""),
+		Credentials: creds,
 	})
 	if err != nil {
 		panic(err)
